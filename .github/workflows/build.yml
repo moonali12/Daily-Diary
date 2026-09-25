@@ -26,11 +26,14 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 3. System Dependencies (Exit code 100 fix)
+      # 3. System Dependencies (Force Non-Interactive Mode)
       - name: Install System Dependencies
+        env:
+          DEBIAN_FRONTEND: noninteractive
+          TZ: Etc/UTC
         run: |
-          sudo apt-get update -y || sudo apt-get update -y
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+          sudo -E apt-get update
+          sudo -E apt-get install -y --no-install-recommends \
             ccache git libffi-dev libssl-dev python3-pip zip unzip autoconf libtool pkg-config \
             zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake
           python -m pip install --upgrade pip setuptools
