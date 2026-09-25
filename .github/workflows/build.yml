@@ -8,54 +8,17 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: kivy/buildozer:latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 1. Python 3.11 Setup
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      # 2. Java JDK 17 Setup
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      # 3. System Dependencies Install
-      - name: Install System Dependencies
-        env:
-          DEBIAN_FRONTEND: noninteractive
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y --no-install-recommends \
-            build-essential ccache git libffi-dev libssl-dev \
-            python3-pip zip unzip autoconf libtool pkg-config zlib1g-dev cmake
-          python -m pip install --upgrade pip setuptools
-          pip install "cython<3.0.0" buildozer kivy
-
-      # 4. Install Build-Tools & Export PATH (AIDL Fix)
-      - name: Setup Android SDK Paths & Install AIDL
-        run: |
-          # SDK Manager se Build-Tools 33.0.2 install karein
-          echo "y" | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --install "build-tools;33.0.2" "platform-tools" "platforms;android-33"
-          
-          # Environment variables export karein taake AIDL system PATH me aa jaye
-          echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV
-          echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> $GITHUB_ENV
-          echo "/usr/local/lib/android/sdk/build-tools/33.0.2" >> $GITHUB_PATH
-          echo "/usr/local/lib/android/sdk/platform-tools" >> $GITHUB_PATH
-
-      # 5. Build APK with Buildozer
       - name: Build APK with Buildozer
         run: |
-          buildozer --v android debug
+          buildozer android debug
 
-      # 6. Upload APK Artifact (v4)
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
