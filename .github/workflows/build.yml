@@ -15,11 +15,28 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Manual AIDL & Build-Tools Setup Step
+      - name: Setup Manual AIDL & Build Tools
+        run: |
+          mkdir -p /root/.buildozer/android/platform/android-sdk/build-tools/33.0.2
+          cd /tmp
+          # Official Android Build Tools Package Direct Download
+          wget -q https://dl.google.com/android/repository/build-tools_r33.0.2-linux.zip -O build-tools.zip
+          unzip -q build-tools.zip -d /tmp/bt
+          
+          # Extract build-tools contents to Buildozer SDK path
+          cp -r /tmp/bt/android-13/* /root/.buildozer/android/platform/android-sdk/build-tools/33.0.2/ 2>/dev/null || cp -r /tmp/bt/* /root/.buildozer/android/platform/android-sdk/build-tools/33.0.2/
+          
+          # Make aidl executable and link to system PATH
+          chmod +x /root/.buildozer/android/platform/android-sdk/build-tools/33.0.2/aidl
+          ln -sf /root/.buildozer/android/platform/android-sdk/build-tools/33.0.2/aidl /usr/local/bin/aidl
+          ln -sf /root/.buildozer/android/platform/android-sdk/build-tools/33.0.2/aidl /usr/bin/aidl
+
       - name: Build APK with Buildozer
         env:
           BUILDOZER_WARN_ON_ROOT: 0
         run: |
-          buildozer android debug
+          buildozer --v android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
