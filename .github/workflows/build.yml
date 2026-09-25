@@ -15,13 +15,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Manual AIDL & Build-Tools Setup Step
+      # Python se Direct Download & Manual AIDL Setup
       - name: Setup Manual AIDL & Build Tools
         run: |
           mkdir -p /root/.buildozer/android/platform/android-sdk/build-tools/33.0.2
           cd /tmp
-          # Official Android Build Tools Package Direct Download
-          wget -q https://dl.google.com/android/repository/build-tools_r33.0.2-linux.zip -O build-tools.zip
+          
+          # Python urllib se download (No wget required)
+          python3 -c "import urllib.request; urllib.request.urlretrieve('https://dl.google.com/android/repository/build-tools_r33.0.2-linux.zip', 'build-tools.zip')"
+          
           unzip -q build-tools.zip -d /tmp/bt
           
           # Extract build-tools contents to Buildozer SDK path
