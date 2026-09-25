@@ -45,3 +45,7 @@ jobs:
         with:
           name: package
           path: bin/*.apk
+- name: Install AIDL
+  run: |
+    yes | sdkmanager --licenses
+    sdkmanager "build-tools;34.0.0"
