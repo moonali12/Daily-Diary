@@ -11,24 +11,35 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python 3.11
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
+      # 1. Java JDK Setup (Android tools ke liye zaroori hai)
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # 2. System dependencies & Android SDK Tools Install
+      - name: Install Dependencies & Android Build Tools
         run: |
           sudo apt-get update
           sudo apt-get install -y ccache git libffi-dev libssl-dev python3-pip
+          sudo apt-get install -y android-sdk build-essential
           python -m pip install --upgrade pip
           pip install "cython<3.0.0" buildozer kivy
 
+      # 3. APK Build Step
       - name: Build APK with Buildozer
         run: |
           buildozer android debug
 
+      # 4. Upload APK Artifact
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
