@@ -26,7 +26,7 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 3. System Dependencies (Clean & Working)
+      # 3. System Dependencies Install
       - name: Install System Dependencies
         env:
           DEBIAN_FRONTEND: noninteractive
@@ -38,11 +38,17 @@ jobs:
           python -m pip install --upgrade pip setuptools
           pip install "cython<3.0.0" buildozer kivy
 
-      # 4. Install Android SDK Build-Tools & AIDL
-      - name: Install Android Build Tools (AIDL)
+      # 4. Install Build-Tools & Export PATH (AIDL Fix)
+      - name: Setup Android SDK Paths & Install AIDL
         run: |
+          # SDK Manager se Build-Tools 33.0.2 install karein
           echo "y" | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --install "build-tools;33.0.2" "platform-tools" "platforms;android-33"
-          yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          
+          # Environment variables export karein taake AIDL system PATH me aa jaye
+          echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> $GITHUB_ENV
+          echo "/usr/local/lib/android/sdk/build-tools/33.0.2" >> $GITHUB_PATH
+          echo "/usr/local/lib/android/sdk/platform-tools" >> $GITHUB_PATH
 
       # 5. Build APK with Buildozer
       - name: Build APK with Buildozer
