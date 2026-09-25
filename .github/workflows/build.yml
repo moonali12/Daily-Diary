@@ -26,7 +26,7 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 3. Clean Package Installation (Fixes Exit Code 100)
+      # 3. System Dependencies (Clean & Working)
       - name: Install System Dependencies
         env:
           DEBIAN_FRONTEND: noninteractive
@@ -38,9 +38,10 @@ jobs:
           python -m pip install --upgrade pip setuptools
           pip install "cython<3.0.0" buildozer kivy
 
-      # 4. Accept Android SDK Licenses
-      - name: Accept Android SDK Licenses
+      # 4. Install Android SDK Build-Tools & AIDL
+      - name: Install Android Build Tools (AIDL)
         run: |
+          echo "y" | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --install "build-tools;33.0.2" "platform-tools" "platforms;android-33"
           yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
       # 5. Build APK with Buildozer
