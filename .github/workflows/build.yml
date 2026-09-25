@@ -1,3 +1,4 @@
+```yaml
 name: Build Android APK
 
 on:
@@ -18,16 +19,32 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Accept Android SDK Licenses
+      - name: Setup Android SDK
         run: |
-          mkdir -p "$HOME/.buildozer/android/platform/android-sdk"
+          set -e
+
           SDK="$HOME/.buildozer/android/platform/android-sdk"
+          mkdir -p "$SDK/cmdline-tools"
 
-          SDKMANAGER=$(find / -type f -name sdkmanager 2>/dev/null | head -n 1)
+          cd /tmp
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline-tools.zip
 
-          if [ -n "$SDKMANAGER" ]; then
-            yes | "$SDKMANAGER" --sdk_root="$SDK" --licenses || true
-          fi
+          mkdir -p /tmp/android-tools
+          unzip -q cmdline-tools.zip -d /tmp/android-tools
+
+          mv /tmp/android-tools/cmdline-tools "$SDK/cmdline-tools/latest"
+
+          export ANDROIDSDK="$SDK"
+          export ANDROID_HOME="$SDK"
+          export ANDROID_SDK_ROOT="$SDK"
+          export PATH="$SDK/cmdline-tools/latest/bin:$PATH"
+
+          yes | sdkmanager --sdk_root="$SDK" --licenses || true
+
+          sdkmanager --sdk_root="$SDK" \
+            "platform-tools" \
+            "platforms;android-35" \
+            "build-tools;35.0.0"
 
       - name: Build APK
         env:
@@ -41,3 +58,4 @@ jobs:
           name: Android-APK
           path: bin/*.apk
           if-no-files-found: error
+```
