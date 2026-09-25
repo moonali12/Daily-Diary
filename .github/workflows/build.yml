@@ -26,20 +26,22 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 3. System Dependencies
+      # 3. System Dependencies (Exit code 100 fix)
       - name: Install System Dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y ccache git libffi-dev libssl-dev python3-pip zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake
+          sudo apt-get update -y || sudo apt-get update -y
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            ccache git libffi-dev libssl-dev python3-pip zip unzip autoconf libtool pkg-config \
+            zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake
           python -m pip install --upgrade pip setuptools
           pip install "cython<3.0.0" buildozer kivy
 
-      # 4. Accept Android SDK Licenses automatically
+      # 4. Accept Android SDK Licenses
       - name: Accept Android SDK Licenses
         run: |
           yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
-      # 5. Clean Buildozer Run (WITHOUT 'yes |' pipe)
+      # 5. Build APK with Buildozer
       - name: Build APK with Buildozer
         run: |
           buildozer --v android debug
