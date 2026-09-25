@@ -15,37 +15,29 @@ jobs:
       image: kivy/buildozer:latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install AIDL
+      - name: Accept Android SDK Licenses
         run: |
-          SDK="/root/.buildozer/android/platform/android-sdk"
-          mkdir -p "$SDK"
+          mkdir -p "$HOME/.buildozer/android/platform/android-sdk"
+          SDK="$HOME/.buildozer/android/platform/android-sdk"
 
-          apt-get update
-          apt-get install -y unzip wget
+          SDKMANAGER=$(find / -type f -name sdkmanager 2>/dev/null | head -n 1)
 
-          mkdir -p "$SDK/build-tools/33.0.2"
-          cd /tmp
-
-          wget -q https://dl.google.com/android/repository/build-tools_r33.0.2-linux.zip -O bt.zip
-          unzip -oq bt.zip -d /tmp/bt
-
-          cp -r /tmp/bt/android-13/. "$SDK/build-tools/33.0.2/"
-
-          chmod +x "$SDK/build-tools/33.0.2/aidl"
-
-          echo "$SDK/build-tools/33.0.2" >> "$GITHUB_PATH"
+          if [ -n "$SDKMANAGER" ]; then
+            yes | "$SDKMANAGER" --sdk_root="$SDK" --licenses || true
+          fi
 
       - name: Build APK
         env:
           BUILDOZER_WARN_ON_ROOT: "0"
         run: |
-          buildozer --v android debug
+          buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: package
+          name: Android-APK
           path: bin/*.apk
+          if-no-files-found: error
